@@ -119,6 +119,9 @@ func SysVendor(ip, community string, retry int, timeout int) (string, error) {
 	if strings.Contains(sysDescrLower, "thunder series") {
 		return "A10", err
 	}
+        if strings.Contains(sysDescrLower, "sangfor af") {
+                return "Sangfor", err
+        }
 
 	return "", err
 }

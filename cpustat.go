@@ -66,6 +66,9 @@ func CpuUtilization(ip, community string, timeout, retry int) (int, error) {
 	case "A10":
 		oid = "1.3.6.1.4.1.22610.2.4.1.3.3"
 		return getA10Cpu(ip, community, oid, timeout, retry)
+        case "Sangfor"
+                oid = "1.3.6.1.2.1.1.11.0"
+                return getSangforCpu(ip, community, oid, timeout, retry)
 	default:
 		err = errors.New(ip + " Switch Vendor is not defined")
 		return 0, err
@@ -208,7 +211,27 @@ func getA10Cpu(ip, community, oid string, timeout, retry int) (value int, err er
 
 	return snmpPDUs[0].Value.(int), err
 }
+func getSangforCpu(ip, community, oid string, timeout, retry int) (value int, err error) {
 
+        defer func() {
+                if r := recover(); r != nil {
+                        log.Println(ip+" Recovered in CPUtilization", r)
+                }
+        }()
+        method := "get"
+
+        var snmpPDUs []gosnmp.SnmpPDU
+
+        for i := 0; i < retry; i++ {
+                snmpPDUs, err = RunSnmp(ip, community, oid, method, timeout)
+                if len(snmpPDUs) > 0 {
+                        break
+                }
+                time.Sleep(100 * time.Millisecond)
+        }
+
+        return snmpPDUs[0].Value.(int), err
+}
 func getLinuxCpu(ip, community, oid string, timeout, retry int) (value int, err error) {
 
 	defer func() {
